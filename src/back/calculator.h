@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QMetaEnum>
+#include <QStringListModel>
 #include <qqmlregistration.h>
 
 #include <QHash>
@@ -17,37 +18,45 @@ class Standart
     Q_OBJECT
     Q_PROPERTY(QString finalValue MEMBER m_FinalValue READ GetFinalValue NOTIFY finalValueChanged)
     QString m_FinalValue;
-    Q_PROPERTY(QString prevOperation MEMBER m_FrontJoined READ GetFinalValue NOTIFY finalValueChanged)
+    Q_PROPERTY(QString prevOperation MEMBER m_FrontJoined READ GetPrevOperation NOTIFY prevValueChanged)
     QString m_FrontJoined;
+	
+public:
+	enum Command {
+		del = 0,
+		clr,
+		clrall,
+		cnvrt,
+		equal
+	};
+	Q_ENUM(Command)
+
+	enum WaitOperation {
+		Cmd = 4,
+		Function,
+		Operator,
+		Value,
+		Undefined
+	};
+	Q_FLAG(WaitOperation)
+	Q_DECLARE_FLAGS(WaitOperations, WaitOperation)
+
+	struct MathElement
+	{
+		QString FinalValue;
+		QString BackOperation, FrontOperation;
+
+		WaitOperation   LastOperation;
+		WaitOperations  LastAvailableOperations;
+	};
+
+private:
+	Q_PROPERTY(QStringListModel* operationHistory MEMBER m_model READ GetOperationHistory)
+	QStringListModel* m_model;
+
+    static QList <MathElement> m_History;
 
 public:
-    enum Command {
-        del = 0,
-        clr,
-        clrall,
-        equal
-    };
-    Q_ENUM(Command)
-
-    enum WaitOperation {
-        Cmd = 4,
-        Function,
-        Operator,
-        Value,
-        Undefined
-    };
-    Q_FLAG(WaitOperation)
-    Q_DECLARE_FLAGS(WaitOperations, WaitOperation)
-
-    struct MathElement
-    {
-        QString FinalValue;
-        QString BackOperation, FrontOperation;
-
-        WaitOperation   LastOperation;
-        WaitOperations  LastAvailableOperations;
-    };
-
     Standart(QObject *parent = nullptr);
     ~Standart() override;
 
@@ -58,22 +67,25 @@ public:
     const QString& GetPrevOperation() const;
     const QString& GetFinalValue() const;
 
+	Q_INVOKABLE static QStringListModel* GetOperationHistory();
+
 private: 
 	template <typename Enum>
     static Enum ConvertStringToEnum(const QString& en);
 
-	void executeCommand(const QString& cmd);
+    virtual void executeCommand(const QString& cmd);
 
-	void AddValue(const QString& value);
-	void AddFunction(const QString& func, const QString& placeHolder);
-	void AddOperator(const QString& op);
+	virtual void AddValue(const QString& value);
+	virtual void AddFunction(const QString& func, const QString& placeHolder);
+	virtual void AddOperator(const QString& op);
 
-	void ClearAll();
-	void ClearHistory();
-	void ClearCalculations();
+	virtual void ClearAll();
+	virtual void ClearCalculations();
+
+	static void AddHistory(const MathElement& el);
+	static void ClearHistory();
 
 signals:
-    void historyChanged();
     void finalValueChanged();
     void prevValueChanged();
 
@@ -81,9 +93,9 @@ private:
     QJSEngine* m_jsEngine = nullptr;
 	QString m_BackJoined;
 
-    QList <MathElement> m_History;
-
+	Command m_LastCommand;
     WaitOperation m_LastOperation;
+
     WaitOperations m_AvaliableOperations;
 };
 
