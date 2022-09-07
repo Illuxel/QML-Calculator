@@ -5,7 +5,9 @@ import QtQuick.Layouts 1.3
 import QtQuick.Window 2.3
 
 import "components" as CalculatorComponents
+
 import Calculator.ConverterBack 1.0
+import Calculator.Standart 1.0
 
 ApplicationWindow {
     id: window
@@ -113,6 +115,7 @@ ApplicationWindow {
                 CalculatorComponents.StyledDrawerButton {
                     id: drawerButton
 
+                    Layout.leftMargin: 6
                     Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
 
                     iconSource: "qrc:/app/assets/images/menu.ico"
@@ -130,7 +133,7 @@ ApplicationWindow {
                     Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
                     Layout.minimumWidth: 150
 
-                    text: ""
+                    text: "Standart"
                     color: "#e5e5e5"
                     font.bold: true
                     font.pixelSize: 20
@@ -139,10 +142,13 @@ ApplicationWindow {
                 CalculatorComponents.StyledDrawerButton {
                     id: historyButton
 
+                    Layout.rightMargin: 6
                     Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
 
                     iconSource: "qrc:/app/assets/images/history.ico"
-                    onClicked: drawerHistory.open()
+                    onClicked: {
+                        drawerHistory.open()
+                    }
                 }
             }
             background: Rectangle {
@@ -203,14 +209,13 @@ ApplicationWindow {
                         drawerMainList.close();
                         stackView.pop();
                         stackView.push(page)
-                        test.currentConverter = name;
                         calcType.text = name;
                     }
                 }
                 model: ListModel {
                     ListElement { name: "Standart"; icosource: "qrc:/app/assets/images/standart.ico";   page: "qrc:/app/qml/pages/Standart.qml" }
                     ListElement { name: "Angle";    icosource: "qrc:/app/assets/images/angle.ico";      page: "qrc:/app/qml/pages/Angle.qml" }
-                    ListElement { name: "Data";     icosource: "qrc:/app/assets/images/data.ico";       page: "qrc:/app/qml/pages/Data.qml" }
+                    ListElement { name: "Data";     icosource: "qrc:/app/assets/images/data.ico";       page: "qrc:/app/qml/pages/DataUnits.qml" }
                 }
             }
         }
@@ -218,7 +223,7 @@ ApplicationWindow {
             id: drawerHistory
             width: window.width
             height: 310 - bw
-            y: parent.y
+            y: parent.y + bw
 
             modal: true
             interactive: true
@@ -230,6 +235,26 @@ ApplicationWindow {
                 color: "#2e2e2e"
                 border.color: "grey"
                 border.width: bw
+            }
+
+            ListView {
+                anchors.centerIn: parent
+                width: 250
+                height: parent.height - windowToolBar.height
+
+                clip: true
+                spacing: 5
+
+                delegate: CalculatorComponents.StyledToolButton {
+                   
+                    width: parent.width
+                    height: 48
+                    textButton: display
+                    onClicked: {
+                        
+                    }
+                }
+                model: Standart.getOperationHistory()
             }
         }
     }
