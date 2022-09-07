@@ -11,15 +11,11 @@ Page {
     Standart {
         id: calcStandart
 
-        onHistoryChanged: {
-            
-        }
-        onPrevValueChanged: {
-            prevTextInput.text;
-        }
-        onFinalValueChanged: {
-            lastTextInput.text = calcStandart.finalValue;
-        }
+        onPrevValueChanged: 
+            prevTextInput.text = calcStandart.prevOperation
+
+        onFinalValueChanged: 
+            lastTextInput.text = calcStandart.finalValue
     }
     background: Rectangle {
         color: "transparent"
@@ -43,7 +39,7 @@ Page {
                 horizontalAlignment: Qt.AlignRight
                 verticalAlignment: Qt.AlignBottom
                 readOnly: true
-                wrapMode: TextEdit.WordWrap
+                clip: true
                 color: Qt.darker("#e5e5e5", 0.4)
                 font.bold: true
                 font.pixelSize: 17
@@ -52,7 +48,6 @@ Page {
         // text input
         Rectangle {
             id: lastTextInputStyle
-
             Layout.fillWidth: true
             Layout.leftMargin: 20
             Layout.rightMargin: 20
@@ -65,15 +60,12 @@ Page {
                 anchors.fill: parent
                 horizontalAlignment: Qt.AlignRight
                 verticalAlignment: Qt.AlignBottom
-                validator: RegularExpressionValidator { regularExpression: /[0-9A-F]+/ }
-                wrapMode: TextEdit.WordWrap
+                clip: true
+                readOnly: true
                 color: "#e5e5e5"
                 font.bold: true
                 font.pixelSize: 34
-                
-                onTextEdited: {
-                    
-                }
+                maximumLength: 15
             }
         }
         // grid buttons view
@@ -96,22 +88,22 @@ Page {
                     iconH: 1
                     iconW: 1
                     fluentThikness: 0.89
+                    itemSpacing: 8
                     textButton: name
                     baseColor: (color == "")
                         ? CalculatorComponents.StyledToolButton.baseColor : color
 
-                    onClicked: { 
+                    onClicked:
                         calcStandart.processButton(type, func, name);
-                    }
                 }
                 model: ListModel {
-                    ListElement { name: "%";    type: "funcion";    func: "%";               color: "" }
+                    ListElement { name: "%";    type: "function";   func: "%1/100";               color: "" }
                     ListElement { name: "CE";   type: "cmd";        func: "clrall";          color: "" }
                     ListElement { name: "C";    type: "cmd";        func: "clr";             color: "" }
                     ListElement { name: "Del";  type: "cmd";        func: "del";             color: "#c42b1c" }
-                    ListElement { name: "1/x";  type: "funcion";    func: "1/(%1)";          color: "" }
-                    ListElement { name: "x^2";  type: "funcion";    func: "Math.pow(%1, 2)"; color: "" }
-                    ListElement { name: "2√";   type: "funcion";    func: "Math.sqrt(%1)";   color: "" }
+                    ListElement { name: "1/x";  type: "function";    func: "1/(%1)";          color: "" }
+                    ListElement { name: "x^2";  type: "function";    func: "Math.pow(%1, 2)"; color: "" }
+                    ListElement { name: "2√";   type: "function";    func: "Math.sqrt(%1)";   color: "" }
                     ListElement { name: "÷";    type: "operator";   func: "/";               color: "" }
                     ListElement { name: "7";    type: "value";      func: "7";               color: "#31313d" }
                     ListElement { name: "8";    type: "value";      func: "8";               color: "#31313d" }
@@ -125,7 +117,7 @@ Page {
                     ListElement { name: "2";    type: "value";      func: "2";               color: "#31313d" }
                     ListElement { name: "3";    type: "value";      func: "3";               color: "#31313d" }
                     ListElement { name: "+";    type: "operator";   func: "+";               color: "" }
-                    ListElement { name: "+/-";  type: "cmd";        func: "%";               color: "#31313d" }
+                    ListElement { name: "+/-";  type: "cmd";        func: "cnvrt";               color: "#31313d" }
                     ListElement { name: "0";    type: "value";      func: "0";               color: "#31313d" }
                     ListElement { name: ".";    type: "value";      func: ".";               color: "#31313d" }
                     ListElement { name: "=";    type: "cmd";        func: "equal";           color: "#afadcc" }
