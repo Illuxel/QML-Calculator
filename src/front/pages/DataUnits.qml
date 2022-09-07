@@ -7,10 +7,6 @@ import Calculator.ConverterBack 1.0
 Page {
     id: page
 
-    ConverterBack {
-        id: test
-    }
-
     Rectangle {
         anchors.fill: parent
         color: "blue"
