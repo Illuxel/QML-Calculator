@@ -13,8 +13,8 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("Calculator QML");
 #endif
 
-    QGuiApplication app(argc, argv);
-    app.setWindowIcon(QIcon("qrc:/app/assets/images/calculator.png"));
+	QGuiApplication app(argc, argv);
+	app.setWindowIcon(QIcon("qrc:/app/assets/images/calculator.png"));
 
 	qmlRegisterType<Standart>("Calculator.Standart", 1, 0, "Standart");
 	qmlRegisterType<ConverterBack>("Calculator.ConverterBack", 1, 0, "ConverterBack");
@@ -24,5 +24,5 @@ int main(int argc, char *argv[])
 	if (engine.rootObjects().isEmpty())
 		return -1;
 
-    return app.exec();
+	return app.exec();
 }
