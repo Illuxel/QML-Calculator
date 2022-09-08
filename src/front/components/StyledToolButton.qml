@@ -12,13 +12,15 @@ ToolButton {
 
     property string textButton: ""
 
+    property real itemSpacing: 5
+
     property color textColor: "#e5e5e5"
     property color baseColor: "#2e2e2e"
 
     property real fluentThikness: 1.0
 
     contentItem: RowLayout {
-        spacing: 5
+        spacing: itemSpacing
         Image {
             source: iconSource
 
