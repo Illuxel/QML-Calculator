@@ -73,14 +73,14 @@ private:
 	template <typename Enum>
     static Enum ConvertStringToEnum(const QString& en);
 
-    virtual void executeCommand(const QString& cmd);
+    void executeCommand(const QString& cmd);
 
-	virtual void AddValue(const QString& value);
-	virtual void AddFunction(const QString& func, const QString& placeHolder);
-	virtual void AddOperator(const QString& op);
+	void AddValue(const QString& value);
+	void AddFunction(const QString& func, const QString& placeHolder);
+	void AddOperator(const QString& op);
 
-	virtual void ClearAll();
-	virtual void ClearCalculations();
+	void ClearAll();
+	void ClearCalculations();
 
 	static void AddHistory(const MathElement& el);
 	static void ClearHistory();

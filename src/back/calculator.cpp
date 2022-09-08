@@ -263,6 +263,9 @@ void Standart::executeCommand(const QString &cmd)
 QString Standart::GetCalculatedProduct() const
 {
     QJSValue val = m_jsEngine->evaluate(m_BackJoined);
+    if (val.isError())
+        return "Error";
+
     return val.toString();
 }
 
