@@ -1,8 +1,5 @@
 #pragma once
 
-#include <QObject>
-#include <qqmlregistration.h>
-
 #include <QStringListModel>
 #include <QHash>
 
@@ -11,28 +8,34 @@
 
 #include <QJSEngine>
 
-class ConverterBack
+class Converter
     : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QStringList typeList MEMBER m_TypeList READ converterList)
+    Q_PROPERTY(QStringList typeList MEMBER m_TypeList READ GetConverterList NOTIFY datatypeListChanged)
     QStringList m_TypeList;
-    Q_PROPERTY(QString currentConverter MEMBER m_CurrentConverter READ currentConverter WRITE SetConverter NOTIFY converterChanged)
+    Q_PROPERTY(QString currentConverter MEMBER m_CurrentConverter READ GetCurrentConverter WRITE SetConverter NOTIFY converterChanged)
     QString m_CurrentConverter;
 
 public:
-    ConverterBack(QObject* parent = nullptr);
-    ~ConverterBack() override;
+    Converter(QObject* parent = nullptr);
 
-    const QStringList& converterList() const;
-    const QString& currentConverter() const;
+    void SetConverter(const QString& type);
 
-    void SetConverter(const QString& converter);
+    const QString& GetCurrentConverter() const;
+    const QStringList& GetConverterList() const;
+
+    ~Converter() override;
+
+private:
+    void LoadObjectToList();
 
 signals:
+    void datatypeListChanged();
     void converterChanged();
 
 private:
-
+    QJSEngine* m_jsEngine = nullptr;
+    QJsonObject* m_ConverterScheme = nullptr;
 };
 

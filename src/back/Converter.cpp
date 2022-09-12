@@ -1,10 +1,10 @@
 #include "Converter.h"
 
 #include <QFile>
-#include <QException>
 
-ConverterBack::ConverterBack(QObject* parent)
+Converter::Converter(QObject* parent)
     : QObject(parent)
+    , m_jsEngine(new QJSEngine(this))
 {
     QFile file("ConverterData.json");
     file.open(QFile::ReadOnly);
@@ -12,26 +12,38 @@ ConverterBack::ConverterBack(QObject* parent)
     QByteArray arr = file.readAll();
 
     QJsonDocument doc = QJsonDocument::fromJson(arr);
-    QJsonObject obj = doc.object();
-
-    m_TypeList = obj.keys();
+    m_ConverterScheme = new QJsonObject(doc.object());
 }
-ConverterBack::~ConverterBack()
+Converter::~Converter()
 {
+    delete m_jsEngine;
+    delete m_ConverterScheme;
 }
 
-const QStringList& ConverterBack::converterList() const
+void Converter::LoadObjectToList()
+{
+    m_TypeList = m_ConverterScheme->value(m_CurrentConverter).toObject().keys();
+    emit datatypeListChanged();
+}
+
+void Converter::SetConverter(const QString& converter)
+{
+    m_CurrentConverter = "";
+
+	for (const auto& data : m_ConverterScheme->keys())
+		if (data == converter)
+			m_CurrentConverter = converter;
+
+    LoadObjectToList();
+
+    emit converterChanged();
+}
+
+const QStringList& Converter::GetConverterList() const
 {
     return m_TypeList;
 }
-
-const QString &ConverterBack::currentConverter() const
+const QString &Converter::GetCurrentConverter() const
 {
     return m_CurrentConverter;
-}
-void ConverterBack::SetConverter(const QString &converter)
-{
-    for (const auto& data : m_TypeList)
-        if (data == converter)
-            m_CurrentConverter = converter;
 }
