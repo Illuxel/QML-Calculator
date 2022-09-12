@@ -3,6 +3,8 @@ import QtQuick.Controls 2.4
 import QtQuick.Layouts 1.3
 
 import "../components" as CalculatorComponents
+
+import Calculator.History 1.0
 import Calculator.Standart 1.0
 
 Page {
@@ -11,12 +13,16 @@ Page {
     Standart {
         id: calcStandart
 
-        onPrevValueChanged: 
-            prevTextInput.text = calcStandart.prevOperation
+        onEnteredValueChanged:
+            finalTextInput.text = calcStandart.enteredValue
 
-        onFinalValueChanged: 
-            lastTextInput.text = calcStandart.finalValue
+        onFinalValueChanged:
+            finalTextInput.text = calcStandart.finalValue
+
+        onLastOperationChanged: 
+            lastTextInput.text = calcStandart.lastOperation
     }
+
     background: Rectangle {
         color: "transparent"
     }
@@ -25,7 +31,7 @@ Page {
         spacing: 6
         // last operation
         Rectangle {
-            id: prevTextInputStyle
+            id: lastTextInputStyle
             Layout.fillWidth: true
             Layout.leftMargin: 20
             Layout.rightMargin: 20
@@ -34,7 +40,7 @@ Page {
             clip: true
             color: "transparent"
             TextInput {
-                id: prevTextInput
+                id: lastTextInput
                 anchors.fill: parent
                 horizontalAlignment: Qt.AlignRight
                 verticalAlignment: Qt.AlignBottom
@@ -47,7 +53,7 @@ Page {
         }
         // text input
         Rectangle {
-            id: lastTextInputStyle
+            id: finalTextInputStyle
             Layout.fillWidth: true
             Layout.leftMargin: 20
             Layout.rightMargin: 20
@@ -56,16 +62,22 @@ Page {
             clip: true
             color: "transparent"
             TextInput {
-                id: lastTextInput
+                id: finalTextInput
                 anchors.fill: parent
                 horizontalAlignment: Qt.AlignRight
                 verticalAlignment: Qt.AlignBottom
                 clip: true
-                readOnly: true
+                focus: true
                 color: "#e5e5e5"
                 font.bold: true
                 font.pixelSize: 34
-                maximumLength: 15
+                maximumLength: 16
+                validator: RegularExpressionValidator { 
+                    regularExpression: /^[0-9]*$/
+                }
+
+                onTextEdited:
+                    calcStandart.enteredValue = finalTextInput.text
             }
         }
         // grid buttons view
@@ -89,38 +101,39 @@ Page {
                     iconW: 1
                     fluentThikness: 0.89
                     itemSpacing: 8
-                    textButton: name
+                    textButton: ph
                     baseColor: (color == "")
                         ? CalculatorComponents.StyledToolButton.baseColor : color
 
-                    onClicked:
-                        calcStandart.processButton(type, func, name);
+                    onClicked: {
+                        calcStandart.processButton(type, func, ph);
+                    }
                 }
                 model: ListModel {
-                    ListElement { name: "%";    type: "function";   func: "%1/100";               color: "" }
-                    ListElement { name: "CE";   type: "cmd";        func: "clrall";          color: "" }
-                    ListElement { name: "C";    type: "cmd";        func: "clr";             color: "" }
-                    ListElement { name: "Del";  type: "cmd";        func: "del";             color: "#c42b1c" }
-                    ListElement { name: "1/x";  type: "function";    func: "1/(%1)";          color: "" }
-                    ListElement { name: "x^2";  type: "function";    func: "Math.pow(%1, 2)"; color: "" }
-                    ListElement { name: "2√";   type: "function";    func: "Math.sqrt(%1)";   color: "" }
-                    ListElement { name: "÷";    type: "operator";   func: "/";               color: "" }
-                    ListElement { name: "7";    type: "value";      func: "7";               color: "#31313d" }
-                    ListElement { name: "8";    type: "value";      func: "8";               color: "#31313d" }
-                    ListElement { name: "9";    type: "value";      func: "9";               color: "#31313d" }
-                    ListElement { name: "x";    type: "operator";   func: "*";               color: "" }
-                    ListElement { name: "4";    type: "value";      func: "4";               color: "#31313d" }
-                    ListElement { name: "5";    type: "value";      func: "5";               color: "#31313d" }
-                    ListElement { name: "6";    type: "value";      func: "6";               color: "#31313d" }
-                    ListElement { name: "-";    type: "operator";   func: "-";               color: "" }
-                    ListElement { name: "1";    type: "value";      func: "1";               color: "#31313d" }
-                    ListElement { name: "2";    type: "value";      func: "2";               color: "#31313d" }
-                    ListElement { name: "3";    type: "value";      func: "3";               color: "#31313d" }
-                    ListElement { name: "+";    type: "operator";   func: "+";               color: "" }
-                    ListElement { name: "+/-";  type: "cmd";        func: "cnvrt";               color: "#31313d" }
-                    ListElement { name: "0";    type: "value";      func: "0";               color: "#31313d" }
-                    ListElement { name: ".";    type: "value";      func: ".";               color: "#31313d" }
-                    ListElement { name: "=";    type: "cmd";        func: "equal";           color: "#afadcc" }
+                    ListElement { ph: "%";   type: "function"; func: "%1/100";          color: "" }
+                    ListElement { ph: "CE";  type: "cmd";      func: "clr";             color: "" }
+                    ListElement { ph: "C";   type: "cmd";      func: "clrall";          color: "" }
+                    ListElement { ph: "Del"; type: "cmd";      func: "del";             color: "#c42b1c" }
+                    ListElement { ph: "1/x"; type: "function"; func: "1/(%1)";          color: "" }
+                    ListElement { ph: "x^2"; type: "function"; func: "Math.pow(%1, 2)"; color: "" }
+                    ListElement { ph: "2√";  type: "function"; func: "Math.sqrt(%1)";   color: "" }
+                    ListElement { ph: "÷";   type: "operator"; func: "/";               color: "" }
+                    ListElement { ph: "7";   type: "value";    func: "7";               color: "#31313d" }
+                    ListElement { ph: "8";   type: "value";    func: "8";               color: "#31313d" }
+                    ListElement { ph: "9";   type: "value";    func: "9";               color: "#31313d" }
+                    ListElement { ph: "x";   type: "operator"; func: "*";               color: "" }
+                    ListElement { ph: "4";   type: "value";    func: "4";               color: "#31313d" }
+                    ListElement { ph: "5";   type: "value";    func: "5";               color: "#31313d" }
+                    ListElement { ph: "6";   type: "value";    func: "6";               color: "#31313d" }
+                    ListElement { ph: "-";   type: "operator"; func: "-";               color: "" }
+                    ListElement { ph: "1";   type: "value";    func: "1";               color: "#31313d" }
+                    ListElement { ph: "2";   type: "value";    func: "2";               color: "#31313d" }
+                    ListElement { ph: "3";   type: "value";    func: "3";               color: "#31313d" }
+                    ListElement { ph: "+";   type: "operator"; func: "+";               color: "" }
+                    ListElement { ph: "+/-"; type: "cmd";      func: "cnvrt";           color: "#31313d" }
+                    ListElement { ph: "0";   type: "value";    func: "0";               color: "#31313d" }
+                    ListElement { ph: ".";   type: "value";    func: ".";               color: "#31313d" }
+                    ListElement { ph: "=";   type: "cmd";      func: "equal";           color: "#afadcc" }
                 }
             }
         }
