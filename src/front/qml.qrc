@@ -1,21 +1,22 @@
 <RCC>
     <qresource prefix="/app/assets">
         <file>images/angle.ico</file>
-        <file>images/calculator.png</file>
         <file>images/data.ico</file>
         <file>images/menu.ico</file>
         <file>images/standart.ico</file>
-        <file>images/history.ico</file>
         <file>images/subtract.ico</file>
         <file>images/close.ico</file>
+        <file>images/calculator_app.png</file>
+        <file>images/settings.png</file>
+        <file>images/history.png</file>
     </qresource>
     <qresource prefix="/app/qml">
         <file>pages/Standart.qml</file>
         <file>main.qml</file>
         <file>components/StyledDrawerButton.qml</file>
         <file>components/StyledToolButton.qml</file>
-        <file>pages/Angle.qml</file>
-        <file>pages/DataUnits.qml</file>
         <file>components/StyledWindowButtons.qml</file>
+        <file>pages/Converter.qml</file>
+        <file>components/StyledTextInput.qml</file>
     </qresource>
 </RCC>
