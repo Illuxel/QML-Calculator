@@ -16,18 +16,17 @@ int main(int argc, char *argv[])
 	QGuiApplication app(argc, argv);
 	app.setWindowIcon(QIcon("qrc:/app/assets/images/calculator.png"));
 
-    QScopedPointer<History> instance(new History());
+    QScopedPointer<History> history(new History());
+    qmlRegisterSingletonInstance("Calculator.History", 1, 0, "History", history.get());
 
-    qmlRegisterSingletonInstance("Calculator.History", 1, 0, "History", instance.get());
+    QScopedPointer<Converter> converter(new Converter());
+    qmlRegisterSingletonInstance("Calculator.Converter", 1, 0, "Converter", converter.get());
 
     qmlRegisterType<Standart>("Calculator.Standart", 1, 0, "Standart");
-    qmlRegisterType<Converter>("Calculator.Converter", 1, 0, "Converter");
 
     QQmlApplicationEngine engine;
-
 	engine.load(QUrl("qrc:/app/qml/main.qml"));
 	if (engine.rootObjects().isEmpty())
 		return -1;
-
 	return app.exec();
 }
