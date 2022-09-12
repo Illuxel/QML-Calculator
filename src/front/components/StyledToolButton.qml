@@ -7,14 +7,19 @@ ToolButton {
 
     property string iconSource: ""
 
-    property int iconW: 24
-    property int iconH: 24
-
-    property string textButton: ""
-
-    property real itemSpacing: 5
+    property real iconW: 24
+    property real iconH: 24
 
     property color textColor: "#e5e5e5"
+    property string textButton: ""
+    property bool textBold: true
+
+    property bool centered: true
+    property real itemSpacing: 0
+
+    property real imageLeftMargin: 5
+    property real textLeftMargin: 8
+
     property color baseColor: "#2e2e2e"
 
     property real fluentThikness: 1.0
@@ -22,23 +27,25 @@ ToolButton {
     contentItem: RowLayout {
         spacing: itemSpacing
         Image {
+            smooth: false
+
             source: iconSource
 
             sourceSize.width: iconW
             sourceSize.height: iconH
 
+            Layout.leftMargin: imageLeftMargin
             Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
-            Layout.leftMargin: 5
         }
-        Label {
+        Text {
             text: textButton
             color: textColor
-            font {
-                bold: true
-                pixelSize: 16
-            }
+            font.bold: textBold
+            font.pixelSize: 16
+            Layout.leftMargin: textLeftMargin
             Layout.alignment: Qt.AlignLeft
         }
+        Item { Layout.fillWidth: centered }
      }
      background: Rectangle {
          color: styledButton.hovered ? Qt.lighter(baseColor, 1.18) : baseColor
