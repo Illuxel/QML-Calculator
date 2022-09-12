@@ -16,10 +16,15 @@ int main(int argc, char *argv[])
 	QGuiApplication app(argc, argv);
 	app.setWindowIcon(QIcon("qrc:/app/assets/images/calculator.png"));
 
-	qmlRegisterType<Standart>("Calculator.Standart", 1, 0, "Standart");
-	qmlRegisterType<ConverterBack>("Calculator.ConverterBack", 1, 0, "ConverterBack");
+    QScopedPointer<History> instance(new History());
 
-	QQmlApplicationEngine engine;
+    qmlRegisterSingletonInstance("Calculator.History", 1, 0, "History", instance.get());
+
+    qmlRegisterType<Standart>("Calculator.Standart", 1, 0, "Standart");
+    qmlRegisterType<Converter>("Calculator.Converter", 1, 0, "Converter");
+
+    QQmlApplicationEngine engine;
+
 	engine.load(QUrl("qrc:/app/qml/main.qml"));
 	if (engine.rootObjects().isEmpty())
 		return -1;
