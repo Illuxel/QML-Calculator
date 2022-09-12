@@ -5,7 +5,7 @@ import QtQuick.Layouts 1.3
 import QtQuick.Window 2.3
 
 import "components" as CalculatorComponents
-import Calculator.History 1.0
+import Calculator.Converter 1.0
 
 ApplicationWindow {
     id: window
@@ -36,9 +36,6 @@ ApplicationWindow {
         border.color: "grey"
         border.width: bw
     }
-
-    // History.onCurrentItemChanged: {}
-
     // window menu layout
     header: ToolBar {
         id: windowToolBar
@@ -68,7 +65,7 @@ ApplicationWindow {
                 anchors.fill: parent
                 spacing: 0
                 Image {
-                    source: "qrc:/app/assets/images/calculator.png"
+                    source: "qrc:/app/assets/images/calculator_app.png"
                     sourceSize.width: 20
                     sourceSize.height: 20
                     Layout.leftMargin: 5
@@ -133,6 +130,7 @@ ApplicationWindow {
                     id: calcType
 
                     Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
+                    Layout.leftMargin: 5
                     Layout.minimumWidth: 150
 
                     text: "Standart"
@@ -140,6 +138,9 @@ ApplicationWindow {
                     font.bold: true
                     font.pixelSize: 20
                 }
+
+                Item { Layout.fillWidth: true }
+
                 // History
                 CalculatorComponents.StyledDrawerButton {
                     id: historyButton
@@ -147,11 +148,9 @@ ApplicationWindow {
                     Layout.rightMargin: 6
                     Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
 
-                    iconSource: "qrc:/app/assets/images/history.ico"
-                    onClicked: {
-                        historyListView.model = History.list;
+                    iconSource: "qrc:/app/assets/images/history.png"
+                    onClicked: 
                         drawerHistory.open();
-                    }
                 }
             }
             background: Rectangle {
@@ -186,39 +185,97 @@ ApplicationWindow {
                 color: "#2e2e2e"
                 border.color: "grey"
                 border.width: bw
-                opacity: 0.967
+                opacity: 1
                 Rectangle {
                     width: parent.radius
                     anchors.rightMargin: drawerMainList.width - parent.radius
                     color: parent.color
                 }
             }
-            ListView {
-                id: drawerList
-                anchors.centerIn: parent
-                width: drawerMainList.width * 0.90
-                height: 250
-                clip: true
-                spacing: 5
 
-                delegate: CalculatorComponents.StyledToolButton {
-                    iconSource: icosource
-                    iconH: 32
-                    iconW: 32
-                    width: drawerList.width
-                    height: 48
-                    textButton: name
-                    onClicked: {
-                        drawerMainList.close();
-                        stackView.pop();
-                        stackView.push(page)
-                        calcType.text = name;
+            Component {
+                id: sectionHeading
+                Rectangle {
+                    height: 28
+                    color: "transparent"
+
+                    required property string section
+
+                    Text {
+                        text: section
+                        color: "white"
+                        font.pixelSize: 14
                     }
                 }
-                model: ListModel {
-                    ListElement { name: "Standart"; icosource: "qrc:/app/assets/images/standart.ico";   page: "qrc:/app/qml/pages/Standart.qml" }
-                    ListElement { name: "Angle";    icosource: "qrc:/app/assets/images/angle.ico";      page: "qrc:/app/qml/pages/Angle.qml" }
-                    ListElement { name: "Data";     icosource: "qrc:/app/assets/images/data.ico";       page: "qrc:/app/qml/pages/DataUnits.qml" }
+            }
+            ColumnLayout {
+                anchors.fill: parent
+                ListView {
+                    id: drawerList
+
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    Layout.topMargin: 25
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
+
+                    clip: true
+                    spacing: 4
+
+                    model: ListModel {
+                        ListElement { name: "Standart"; icosource: "qrc:/app/assets/images/standart.ico"; page: "qrc:/app/qml/pages/Standart.qml";  section: "Calculator" }
+                        ListElement { name: "Angle";    icosource: "qrc:/app/assets/images/angle.ico";    page: "qrc:/app/qml/pages/Converter.qml"; section: "Converter" }
+                        ListElement { name: "Data";     icosource: "qrc:/app/assets/images/data.ico";     page: "qrc:/app/qml/pages/Converter.qml"; section: "Converter" }
+                    }
+                    delegate: CalculatorComponents.StyledToolButton {
+                        iconSource: icosource
+                        iconH: 28
+                        iconW: 28
+
+                        width: drawerList.width
+                        height: 48
+
+                        textButton: name
+                        textBold: false
+
+                        onClicked: {
+                            if (section == "Calculator")
+                                historyButton.visible = true;
+                            else  
+                                historyButton.visible = false;
+
+                            if (section == "Converter")
+                                Converter.currentConverter = name;
+
+                            drawerMainList.close();
+                            stackView.pop();
+                            stackView.push(page);
+                            calcType.text = name
+                        }
+                    }
+
+                    section.property: "section"
+                    section.criteria: ViewSection.FullString
+                    section.delegate: sectionHeading
+                }
+
+                CalculatorComponents.StyledToolButton {
+                    id: settingsButton
+
+                    iconSource: "qrc:/app/assets/images/settings.png"
+
+                    textButton: "Settings"
+                    textBold: false
+
+                    Layout.fillWidth: true
+                    Layout.margins: 10
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+
+                    onClicked: {
+                        drawerMainList.close()
+                    }
                 }
             }
         }
@@ -253,8 +310,8 @@ ApplicationWindow {
                     width: parent.width
                     height: 48
                     textButton: modelData
-                    onClicked:
-                        History.currentItem = modelData;
+                    onClicked: {}
+                        //History.currentItem = modelData;
                 }
             }
         }
