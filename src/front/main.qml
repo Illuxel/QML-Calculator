@@ -5,9 +5,7 @@ import QtQuick.Layouts 1.3
 import QtQuick.Window 2.3
 
 import "components" as CalculatorComponents
-
-import Calculator.ConverterBack 1.0
-import Calculator.Standart 1.0
+import Calculator.History 1.0
 
 ApplicationWindow {
     id: window
@@ -38,6 +36,9 @@ ApplicationWindow {
         border.color: "grey"
         border.width: bw
     }
+
+    // History.onCurrentItemChanged: {}
+
     // window menu layout
     header: ToolBar {
         id: windowToolBar
@@ -97,6 +98,7 @@ ApplicationWindow {
             }
         }
     }
+    //
     Page {
         id: mainPage
         anchors.fill: parent
@@ -147,7 +149,8 @@ ApplicationWindow {
 
                     iconSource: "qrc:/app/assets/images/history.ico"
                     onClicked: {
-                        drawerHistory.open()
+                        historyListView.model = History.list;
+                        drawerHistory.open();
                     }
                 }
             }
@@ -238,6 +241,7 @@ ApplicationWindow {
             }
 
             ListView {
+                id: historyListView
                 anchors.centerIn: parent
                 width: 250
                 height: parent.height - windowToolBar.height
@@ -246,15 +250,12 @@ ApplicationWindow {
                 spacing: 5
 
                 delegate: CalculatorComponents.StyledToolButton {
-                   
                     width: parent.width
                     height: 48
-                    textButton: display
-                    onClicked: {
-                        
-                    }
+                    textButton: modelData
+                    onClicked:
+                        History.currentItem = modelData;
                 }
-                model: Standart.getOperationHistory()
             }
         }
     }
