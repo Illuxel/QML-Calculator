@@ -90,25 +90,10 @@ Page {
                 id: gridView
                 anchors.fill: parent
                 anchors.margins: 10
-
+                interactive: false
                 cellHeight: gridView.height / 6
                 cellWidth: gridView.width / 4
 
-                delegate: CalculatorComponents.StyledToolButton {
-                    height: 48
-                    width: 72
-                    iconH: 1
-                    iconW: 1
-                    fluentThikness: 0.89
-                    itemSpacing: 8
-                    textButton: ph
-                    baseColor: (color == "")
-                        ? CalculatorComponents.StyledToolButton.baseColor : color
-
-                    onClicked: {
-                        calcStandart.processButton(type, func, ph);
-                    }
-                }
                 model: ListModel {
                     ListElement { ph: "%";   type: "function"; func: "%1/100";          color: "" }
                     ListElement { ph: "CE";  type: "cmd";      func: "clr";             color: "" }
@@ -134,6 +119,26 @@ Page {
                     ListElement { ph: "0";   type: "value";    func: "0";               color: "#31313d" }
                     ListElement { ph: ".";   type: "value";    func: ".";               color: "#31313d" }
                     ListElement { ph: "=";   type: "cmd";      func: "equal";           color: "#afadcc" }
+                }
+                delegate: CalculatorComponents.StyledToolButton {
+                    height: 46
+                    width: 72
+                    iconH: 1
+                    iconW: 1
+                    fluentThikness: 0.89
+
+                    centered: false
+                    itemSpacing: 8
+
+                    textButton: ph
+                    imageLeftMargin: 4
+
+                    baseColor: (color == "")
+                        ? CalculatorComponents.StyledToolButton.baseColor : color
+
+                    onClicked: {
+                        calcStandart.processButton(type, func, ph);
+                    }
                 }
             }
         }
