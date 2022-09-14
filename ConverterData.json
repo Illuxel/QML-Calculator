@@ -1,0 +1,17 @@
+{
+  "Angle": {
+    "Gardian": "%1*1.111111",
+    "Radian": "%1*Math.PI/180",
+    "Degree": "%1"
+  },
+  "Data": {
+    "Bytes": "8", 
+    "Kilobytes": "Math.pow(1000, %1)",   
+    "Megabytes": "Math.pow(1000, %1)",  
+    "Gigabytes": "Math.pow(1000, %1)",  
+    "Terabytes": "Math.pow(1000, %1)", 
+    "Petabytes": "Math.pow(1000, %1)", 
+    "Exabytes": "Math.pow(1000, %1)", 
+    "Zetabytes": "Math.pow(1000, %1)" 
+  }
+}
