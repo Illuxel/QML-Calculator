@@ -11,14 +11,9 @@ class HistoryElement
 
 public:
 	HistoryElement() = default;
-	HistoryElement(const QString& placeHolder)
-		: m_PlaceHolderText(placeHolder) {}
-	virtual ~HistoryElement() {}
+    virtual ~HistoryElement() = default;
 
-    virtual QString placeHolderText() const;
-
-protected:
-	QString m_PlaceHolderText;
+    virtual QString placeHolderText() const = 0;
 };
 
 class History
@@ -27,6 +22,7 @@ class History
     Q_OBJECT
     Q_PROPERTY(QStringList list READ GetHistoryList NOTIFY historyListChanged)
     Q_PROPERTY(QString currentItem READ GetCurrentItem WRITE SetCurrentItem NOTIFY currentItemChanged)
+    Q_PROPERTY(History* object READ GetObject)
 
 public:
     explicit History(QObject* parent = nullptr);
@@ -34,10 +30,12 @@ public:
     Q_INVOKABLE QString placeHolderAt(int index);
     Q_INVOKABLE void clearHistory();
 
-    QStringList GetHistoryList() const;
+    History* GetObject();
 
-    Q_INVOKABLE QString GetCurrentItem();
-    Q_INVOKABLE void SetCurrentItem(const QString& el);
+    QStringList GetHistoryList() const;
+    QString GetCurrentItem();
+
+    void SetCurrentItem(const QString& el);
 
     ~History() override;
 
@@ -47,7 +45,7 @@ public slots:
 
 signals:
     void historyListChanged();
-    void currentItemChanged();
+    void currentItemChanged(HistoryElement* item);
 
 private:
     QList <HistoryElement*> m_Elements;

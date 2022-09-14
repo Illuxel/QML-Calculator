@@ -5,6 +5,12 @@
 
 History::History(QObject *parent)
     : QObject(parent) {}
+
+History* History::GetObject()
+{
+    return this;
+}
+
 History::~History()
 {
     for (auto& el : m_Elements)
@@ -41,24 +47,17 @@ QString History::GetCurrentItem()
 }
 void History::SetCurrentItem(const QString& setEl)
 {
-    for (const auto& el : m_Elements)
+    for (auto el : m_Elements)
         if (el->placeHolderText() == setEl)
             m_CurrentItem = el;
 
-    emit currentItemChanged();
+    emit currentItemChanged(m_CurrentItem);
 }
 
 QStringList History::GetHistoryList() const
 {
     QStringList m_HistoryList;
-    for (const auto& el : m_Elements)
+    for (auto el : m_Elements)
         m_HistoryList.push_back(el->placeHolderText());
     return m_HistoryList;
-}
-
-//
-
-QString HistoryElement::placeHolderText() const
-{
-    return m_PlaceHolderText;
 }
