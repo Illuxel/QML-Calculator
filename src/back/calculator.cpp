@@ -1,279 +1,414 @@
 #include "Calculator.h"
 
-#include <QQmlApplicationEngine>
+#include "OperationHistory.h"
 
 Standart::Standart(QObject *parent)
     : QObject{parent}
     , m_jsEngine(new QJSEngine(this))
-    , m_model(new QStringListModel)
 {
-    m_LastOperation = Undefined;
-    m_AvaliableOperations = Value;
+	m_UnsavedValue = '0';
+    m_LastOperation = Value;
 }
 Standart::~Standart()
 {
     delete m_jsEngine;
-    delete m_model;
 }
 
 void Standart::processButton(const QString& type, const QString& func, const QString& placeHolder)
 {
     QString capitalized = type;
     capitalized[0] = type[0].toUpper();
-
     WaitOperation t = ConvertStringToEnum<WaitOperation>(capitalized);
 
     switch (t)
     {
-    case Standart::Cmd: executeCommand(func);
+    case Standart::Cmd: ExecuteCommand(func);
         break;
     case Standart::Function: AddFunction(func, placeHolder);
 		break;
-	case Standart::Operator: AddOperator(func);
+	case Standart::Operator: AddOperator(*func.begin());
         break;
-	case Standart::Value: AddValue(func);
+	case Standart::Value: AddEnteredValue(*func.begin());
 		break;
     }
 }
-
-void Standart::AddValue(const QString& value)
+void Standart::setHistory(History* history)
 {
-    if (!m_AvaliableOperations.testFlag(Value))
-        return;
-    if (value == '0' && (m_BackJoined.isEmpty() || m_FinalValue.isEmpty()))
-        return;
-    if (m_BackJoined.isEmpty() && value == '.')
-        return;
+	connect(history, &History::currentItemChanged, this, &Standart::onHistoryItemClicked);
+	m_History = history;
+}
 
-	if (m_BackJoined.isEmpty())
-	{
-		m_BackJoined = value;
-        m_FinalValue = value;
-    }
-	else
-	{
-        m_BackJoined += value;
+void Standart::update()
+{
+	emit lastOperationChanged();
+	emit enteredValueChanged();
+}
 
-		if (m_LastOperation == Value)
-		{
-            m_FinalValue += value;
-		}
-		if (m_LastOperation == Operator)
-		{
-            m_FinalValue = value;
-		}
-        if (m_LastOperation == Function)
-        {
-            m_FinalValue = value;
-        }
+void Standart::getEqual()
+{
+	if (m_BackEndExpression.isEmpty())
+		return;
+
+	if (m_LastOperation == Function)
+	{
+		m_UnsavedValue = m_FinalValue;
+		m_BackEndExpression.clear();
 	}
 
+	if (m_LastOperation == Cmd)
+	{
+		if (m_LastCommand == equal)
+		{
+			m_UnsavedValue = m_FinalValue;
+			m_LastJoined = m_FinalValue;
+			m_BackEndExpression.clear();
+		}
+	}
+
+	if (!m_BackEndExpression.end()->isNumber())
+		m_BackEndExpression += m_UnsavedValue;
+
+	m_FinalValue = CalculateProduct();
 	emit finalValueChanged();
 
-    m_LastOperation = Value;
-    m_AvaliableOperations = Operator | Function | Value;
+	OperationElement* el = new OperationElement();
+
+	el->SetFinalValue(m_FinalValue);
+
+	el->SetUnsavedValue(m_UnsavedValue);
+	m_UnsavedValue.clear();
+
+	m_LastJoined = m_BackEndExpression;
+	el->SetLastJoined(m_LastJoined);
+	emit lastOperationChanged();
+
+	el->SetBackEndExpression(m_BackEndExpression);
+	el->SetOperationType(m_LastOperation);
+	
+	m_History->pushElement(el);
 }
-void Standart::AddFunction(const QString& func, const QString& placeHolder) // Math.pow(%1, 2)
+
+void Standart::ExecuteCommand(const QString& cmd)
 {
-	if (m_LastOperation == Undefined)
-		return;
-	if (m_LastOperation == Operator)
-		return;
+	Command c = ConvertStringToEnum<Command>(cmd);
 
-	// preview opeartion 
-	if (int pos = placeHolder.indexOf("x") != -1) {
-        QString templ = placeHolder;
-        templ.replace('x', m_BackJoined);
-		m_FrontJoined = templ;
-	}
-	else {
-		m_FrontJoined = placeHolder + m_BackJoined;
-	}
-
-    // parsing function
-	if (m_BackJoined.isEmpty())
+	switch (c)
 	{
-		if (!m_FinalValue.isEmpty())
+	case Standart::del:
+	{
+		DeleteEnteredValue();
+		break;
+	}
+	case Standart::clr: 
+	{
+		ClearEntered();
+		break; 
+	}
+	case Standart::clrall:
+	{
+		ClearCalculations();
+		break;
+	}
+	case Standart::cnvrt:
+	{
+		if (m_UnsavedValue[0] == '0')
+			return;
+
+		if (m_UnsavedValue.isEmpty())
 		{
-			m_BackJoined = func.arg(m_FinalValue);
+			if (m_FinalValue.indexOf('-') != -1)
+				m_FinalValue.remove(0, 1);
+			else
+				m_FinalValue.push_front('-');
+
+			m_UnsavedValue = m_FinalValue;
+
+			emit finalValueChanged();
 		}
-		else
+		else {
+			if (m_UnsavedValue.indexOf('-') != -1)
+				m_UnsavedValue.remove(0, 1);
+			else
+				m_UnsavedValue.push_front('-');
+
+			m_FinalValue = m_UnsavedValue;
+
+			emit enteredValueChanged();
+		}
+
+		break;
+	}
+	case Standart::equal:
+	{
+		getEqual();
+		break;
+	}
+	}
+
+	m_LastCommand = c;
+	m_LastOperation = Cmd;
+}
+
+Q_INVOKABLE void Standart::SetEnteredValue(const QString& value)
+{
+	m_UnsavedValue = value;
+	m_LastOperation = Value;
+
+	emit enteredValueChanged();
+}
+void Standart::AddEnteredValue(const QChar& value)
+{
+	if (!m_UnsavedValue.isEmpty()) {
+		if (m_UnsavedValue.left(2) != "0." && value.isSymbol())
 		{
 			return;
 		}
+		if (m_UnsavedValue[0] == '0' && m_UnsavedValue.size() == 1 && value.isNumber())
+			m_UnsavedValue.clear();
 	}
-	else
+	else {
+		if (value == '.')
+			return;
+	}
+
+	if (m_LastOperation == Cmd)
+		if (m_LastCommand == equal)
+			m_UnsavedValue = value;
+
+	if (m_LastOperation == Operator) {
+		m_UnsavedValue = value;
+	}
+	else {
+		m_UnsavedValue += value;
+	}
+
+	m_LastOperation = Value;
+	emit enteredValueChanged();
+}
+
+void Standart::AddOperator(const QChar& op)
+{
+	if (m_LastOperation == Cmd) 
 	{
-		m_BackJoined = func.arg(m_BackJoined);
+		if (m_LastCommand == equal) 
+		{
+			m_UnsavedValue = m_FinalValue;
+			m_BackEndExpression.clear();
+		}
 	}
 
-	m_FinalValue = GetCalculatedProduct();
+	if (m_LastOperation == Operator) 
+	{	
+		m_BackEndExpression.replace(m_BackEndExpression.last(1), op);
+	}
+	else if (m_LastOperation == Function)
+	{
+		m_UnsavedValue = m_FinalValue;
+		m_BackEndExpression = m_FinalValue + op;
+	}
+	else 
+	{
+		m_BackEndExpression += m_UnsavedValue;
+		m_BackEndExpression += op;
+	}
 
-    emit prevValueChanged();
-	emit finalValueChanged();
+	m_LastJoined = m_BackEndExpression;
 
-	m_BackJoined.clear();
+	emit lastOperationChanged();
 
+	m_LastOperation = Operator;
+}
+void Standart::AddFunction(const QString& func, const QString& placeHolder) // Math.pow(%1, 2)
+{
+	/*if (m_LastOperation == Undefined)
+		return;*/
+
+	if (m_LastOperation == Function)
+	{
+		m_BackEndExpression = func.arg(m_FinalValue);
+		m_LastJoined = ConcatPHFunctionWithValue(placeHolder, m_FinalValue.toDouble());
+		m_FinalValue = CalculateProduct();
+		m_UnsavedValue = m_FinalValue;
+
+		m_LastOperation = Function;
+
+		OperationElement* el = new OperationElement();
+
+		el->SetFinalValue(m_FinalValue);
+		el->SetUnsavedValue(m_UnsavedValue);
+		el->SetLastJoined(m_LastJoined);
+		el->SetBackEndExpression(m_BackEndExpression);
+		el->SetOperationType(m_LastOperation);
+
+		m_History->pushElement(el);
+
+		emit lastOperationChanged();
+		emit finalValueChanged();
+
+		return;
+	}
+	else {
+		if (m_LastOperation != Value && m_LastOperation != Cmd)
+		{
+			if (m_LastCommand != equal)
+				return;
+			return;
+		}
+	}
+
+	if (m_LastOperation == Cmd)
+	{
+		if (m_LastCommand == equal)
+		{
+			m_UnsavedValue = m_FinalValue;
+		}
+	}
+
+	m_BackEndExpression = func.arg(m_UnsavedValue);
+	m_FinalValue = CalculateProduct();
+
+	m_LastJoined = ConcatPHFunctionWithValue(placeHolder, m_UnsavedValue.toDouble());
 	m_LastOperation = Function;
-	m_AvaliableOperations = Operator | Function | Value;
-}
-void Standart::AddOperator(const QString& op)
-{
-    if (m_LastOperation == Undefined)
-        return;
-    if (!m_AvaliableOperations.testFlag(Operator))
-        return;
 
-    if (m_BackJoined.isEmpty())
-    {
-        m_BackJoined = m_FinalValue + op;
-        m_FrontJoined = m_BackJoined;
-    }
-    else
-    {
-        m_BackJoined += op;
-        m_FrontJoined = m_BackJoined;
-    }
+	OperationElement* el = new OperationElement();
 
-    emit prevValueChanged();
+	el->SetFinalValue(m_FinalValue);
+	el->SetUnsavedValue(m_UnsavedValue);
+	el->SetLastJoined(m_LastJoined);
+	el->SetBackEndExpression(m_BackEndExpression);
+	el->SetOperationType(m_LastOperation);
 
-    m_LastOperation = Operator;
-    m_AvaliableOperations = Function | Value;
+	m_History->pushElement(el);
+
+	emit lastOperationChanged();
+	emit finalValueChanged();
 }
 
-void Standart::ClearAll()
+void Standart::DeleteEnteredValue() 
 {
-	ClearHistory();
-	ClearCalculations();
+	if (m_UnsavedValue.isEmpty()) 
+	{
+		m_UnsavedValue = '0';
+		return;
+	}
+
+	if (m_UnsavedValue.size() == 2 && m_UnsavedValue[0] == '-')
+		m_UnsavedValue = '0';
+	else 
+		m_UnsavedValue.remove(m_UnsavedValue.size() - 1, 1);
+
+	emit enteredValueChanged();
+}
+
+void Standart::ClearEntered() 
+{
+	m_UnsavedValue = '0';
+	emit enteredValueChanged();
 }
 void Standart::ClearCalculations()
 {
-	m_BackJoined.clear();
-
+	ClearEntered();
 	m_FinalValue.clear();
+	m_BackEndExpression.clear();
+
+	m_LastJoined.clear();
+	m_LastOperation = Value;
+	emit lastOperationChanged();
+
+	emit enteredValueChanged();
+}
+
+void Standart::onHistoryItemClicked(HistoryElement* item)
+{
+	OperationElement* el = static_cast<OperationElement*>(item);
+	
+	m_FinalValue = el->GetFinalValue();
+	m_LastJoined = el->GetLastJoined();
+
+	m_LastOperation = el->GetOperationType();
+	m_BackEndExpression = el->GetBackEndExpression();
+
+	emit lastOperationChanged();
 	emit finalValueChanged();
-	m_FrontJoined.clear();
-    emit prevValueChanged();
-
-	m_LastOperation = Undefined;
-	m_AvaliableOperations = Value;
 }
 
-QList <Standart::MathElement> Standart::m_History{};
-
-void Standart::AddHistory(const MathElement& el)
+QString Standart::ConcatPHFunctionWithValue(const QString& placeHolder, double value) const
 {
-    m_History.push_back(el);
-}
-QStringListModel* Standart::GetOperationHistory()
-{
-    QStringList temp;
+	QString temp = placeHolder;
 
-    for (const auto& el : m_History)
-        temp.push_back(el.FrontOperation);
+	if (placeHolder.indexOf('x') != -1)
+		temp.replace('x', QString::number(value), Qt::CaseSensitive);
+	else {
+		if (temp.size() == 1)
+			temp = QString::number(value) + placeHolder;
+		else 
+			temp = placeHolder + QString::number(value);
+	}
 
-    return new QStringListModel(temp);
-}
-void Standart::ClearHistory()
-{
-    m_History.clear();
+	return temp;
 }
 
-void Standart::executeCommand(const QString &cmd)
+QString Standart::CalculateProduct()
 {
-    Command c = ConvertStringToEnum<Command>(cmd);
-    m_LastCommand = c;
-
-    MathElement el;
-
-	switch (c)
-    {
-    case Standart::del:
-    {
-        if (m_AvaliableOperations.testFlag(Value))
-        {
-            if (!m_BackJoined.isEmpty()) {
-
-                bool is_number = m_BackJoined[m_BackJoined.size() - 1].isNumber();
-
-                if (is_number)
-                    m_BackJoined.erase(m_BackJoined.end() - 1, m_BackJoined.end());
-                else
-                {
-
-                }
-            }
-
-            if (!m_FinalValue.isEmpty())
-                m_FinalValue.erase(m_FinalValue.end() - 1, m_FinalValue.end());
-        }
-        emit finalValueChanged();
-
-        break;
-    }
-    case Standart::clr: ClearCalculations();
-        break;
-    case Standart::clrall: ClearAll();
-        break;
-	case Standart::cnvrt: 
-    {
-        if (m_FinalValue.isEmpty() || m_BackJoined.isEmpty())
-            return;
-
-        if (int pos = m_FinalValue.indexOf('-') != -1)
-            m_FinalValue.erase(m_FinalValue.begin(), m_FinalValue.begin() + pos);
-        else
-            m_FinalValue.insert(0, '-');
-
-        m_BackJoined = m_FinalValue;
-
-        emit finalValueChanged();
-
-        break;
-    }
-	case Standart::equal: 
-    {
-        if (m_LastOperation == Function)
-            m_BackJoined = m_FinalValue;
-        if (m_LastOperation == Operator)
-            m_BackJoined += m_FinalValue;
-
-        el.BackOperation = m_BackJoined;
-
-        el.LastOperation = m_LastOperation;
-        el.LastAvailableOperations = m_AvaliableOperations;
-
-        m_FinalValue = GetCalculatedProduct();
-        el.FinalValue = m_FinalValue;
-        emit finalValueChanged();
-
-        m_FrontJoined = m_BackJoined + '=';
-        el.FrontOperation = m_FrontJoined;
-        emit prevValueChanged();
-
-        // m_LastOperation = Undefined;
-
-        AddHistory(el);
-
-        break;
-    }
-    }
-}
-
-QString Standart::GetCalculatedProduct() const
-{
-    QJSValue val = m_jsEngine->evaluate(m_BackJoined);
-    if (val.isError())
-        return "Error";
-
+    QJSValue val = m_jsEngine->evaluate(m_BackEndExpression);
     return val.toString();
 }
 
-const QString& Standart::GetPrevOperation() const
-{
-    return m_FrontJoined;
-}
 const QString& Standart::GetFinalValue() const
 {
-    return m_FinalValue;
+	return m_FinalValue;
+}
+const QString& Standart::GetLastOperation() const
+{
+    return m_LastJoined;
+}
+
+QString OperationElement::placeHolderText() const
+{
+	return LastJoined + '=' + FinalValue;
+}
+
+const QString& OperationElement::GetFinalValue() const
+{
+	return FinalValue;
+}
+void OperationElement::SetFinalValue(QString val)
+{
+	FinalValue = val;
+}
+
+const QString& OperationElement::GetUnsavedValue() const
+{
+	return UnsavedValue;
+}
+void OperationElement::SetUnsavedValue(QString val)
+{
+	UnsavedValue = val;
+}
+
+const QString& OperationElement::GetLastJoined() const
+{
+	return LastJoined;
+}
+void OperationElement::SetLastJoined(QString val)
+{
+	LastJoined = val;
+}
+
+const QString& OperationElement::GetBackEndExpression() const
+{
+	return BackEndExpression;
+}
+void OperationElement::SetBackEndExpression(QString val)
+{
+	BackEndExpression = val;
+}
+
+Standart::WaitOperation OperationElement::GetOperationType() const
+{
+	return LastOperation;
+}
+void OperationElement::SetOperationType(Standart::WaitOperation val)
+{
+	LastOperation = val;
 }

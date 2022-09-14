@@ -1,14 +1,9 @@
 #pragma once
 
-#include <QObject>
+#include "OperationHistory.h"
+
 #include <QMetaEnum>
 #include <QStringListModel>
-#include <qqmlregistration.h>
-
-#include <QHash>
-
-#include <QJsonDocument>
-#include <QJsonObject>
 
 #include <QJSEngine>
 
@@ -16,11 +11,15 @@ class Standart
     : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString finalValue MEMBER m_FinalValue READ GetFinalValue NOTIFY finalValueChanged)
-    QString m_FinalValue;
-    Q_PROPERTY(QString prevOperation MEMBER m_FrontJoined READ GetPrevOperation NOTIFY prevValueChanged)
-    QString m_FrontJoined;
-	
+
+	Q_PROPERTY(QString finalValue MEMBER m_FinalValue READ GetFinalValue NOTIFY finalValueChanged)
+	QString m_FinalValue;
+	Q_PROPERTY(QString enteredValue MEMBER m_UnsavedValue WRITE SetEnteredValue NOTIFY enteredValueChanged)
+	QString m_UnsavedValue;
+
+    Q_PROPERTY(QString lastOperation MEMBER m_LastJoined READ GetLastOperation NOTIFY lastOperationChanged)
+    QString m_LastJoined;
+
 public:
 	enum Command {
 		del = 0,
@@ -30,77 +29,93 @@ public:
 		equal
 	};
 	Q_ENUM(Command)
-
 	enum WaitOperation {
 		Cmd = 4,
 		Function,
 		Operator,
-		Value,
-		Undefined
+		Value/*,
+		Undefined*/
 	};
 	Q_FLAG(WaitOperation)
 	Q_DECLARE_FLAGS(WaitOperations, WaitOperation)
-
-	struct MathElement
-	{
-		QString FinalValue;
-		QString BackOperation, FrontOperation;
-
-		WaitOperation   LastOperation;
-		WaitOperations  LastAvailableOperations;
-	};
-
-private:
-	Q_PROPERTY(QStringListModel* operationHistory MEMBER m_model READ GetOperationHistory)
-	QStringListModel* m_model;
-
-    static QList <MathElement> m_History;
 
 public:
     Standart(QObject *parent = nullptr);
     ~Standart() override;
 
-    Q_INVOKABLE void processButton(const QString& type, const QString& func, const QString& placeHolder);
+    Q_INVOKABLE virtual void processButton(const QString& type, const QString& func, const QString& placeHolder);
+	Q_INVOKABLE void setHistory(History* history);
 
-    QString GetCalculatedProduct() const;
+	Q_INVOKABLE void update();
 
-    const QString& GetPrevOperation() const;
+	Q_INVOKABLE void getEqual();
+
     const QString& GetFinalValue() const;
+    const QString& GetLastOperation() const;
 
-	Q_INVOKABLE static QStringListModel* GetOperationHistory();
+private:
+    void ExecuteCommand(const QString& cmd);
 
-private: 
-	template <typename Enum>
-    static Enum ConvertStringToEnum(const QString& en);
+	QString CalculateProduct();
 
-    void executeCommand(const QString& cmd);
+	QString ConcatPHFunctionWithValue(const QString& placeHolder, double value) const;
 
-	void AddValue(const QString& value);
+	Q_INVOKABLE void SetEnteredValue(const QString& value);
+	void AddEnteredValue(const QChar& value);
+
+	void AddOperator(const QChar& op);
 	void AddFunction(const QString& func, const QString& placeHolder);
-	void AddOperator(const QString& op);
 
-	void ClearAll();
+	void DeleteEnteredValue();
+	void ClearEntered();
 	void ClearCalculations();
 
-	static void AddHistory(const MathElement& el);
-	static void ClearHistory();
+private slots:
+	void onHistoryItemClicked(HistoryElement* item);
 
 signals:
     void finalValueChanged();
-    void prevValueChanged();
+	void enteredValueChanged();
+    void lastOperationChanged();
 
 private:
     QJSEngine* m_jsEngine = nullptr;
-	QString m_BackJoined;
+	History* m_History = nullptr;
+
+	QString m_BackEndExpression, m_FrontEndExpression;
 
 	Command m_LastCommand;
     WaitOperation m_LastOperation;
+};
 
-    WaitOperations m_AvaliableOperations;
+class OperationElement
+	: public HistoryElement
+{
+public:
+	QString placeHolderText() const override;
+
+	const QString& GetFinalValue() const;
+	void SetFinalValue(QString val);
+
+	const QString& GetUnsavedValue() const;
+	void SetUnsavedValue(QString val);
+
+	const QString& GetLastJoined() const;
+	void SetLastJoined(QString val);
+
+	const QString& GetBackEndExpression() const;
+	void SetBackEndExpression(QString val);
+
+	Standart::WaitOperation GetOperationType() const;
+	void SetOperationType(Standart::WaitOperation val);
+
+private:
+	QString FinalValue, UnsavedValue, LastJoined, BackEndExpression;
+	Standart::WaitOperation LastOperation;
 };
 
 template <typename Enum>
-Enum Standart::ConvertStringToEnum(const QString& enStr)
+Enum ConvertStringToEnum(const QString& enStr)
 {
 	QMetaEnum en = QMetaEnum::fromType<Enum>();
 	if (enStr.isEmpty())
