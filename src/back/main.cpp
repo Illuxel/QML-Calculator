@@ -18,11 +18,10 @@ int main(int argc, char *argv[])
 
     QScopedPointer<History> history(new History());
     qmlRegisterSingletonInstance("Calculator.History", 1, 0, "History", history.get());
+    qmlRegisterType<Standart>("Calculator.Standart", 1, 0, "Standart");
 
     QScopedPointer<Converter> converter(new Converter());
     qmlRegisterSingletonInstance("Calculator.Converter", 1, 0, "Converter", converter.get());
-
-    qmlRegisterType<Standart>("Calculator.Standart", 1, 0, "Standart");
 
     QQmlApplicationEngine engine;
 	engine.load(QUrl("qrc:/app/qml/main.qml"));
