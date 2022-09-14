@@ -21,6 +21,9 @@ Page {
 
         onLastOperationChanged: 
             lastTextInput.text = calcStandart.lastOperation
+
+        Component.onCompleted:
+            calcStandart.setHistory(History.object)
     }
 
     background: Rectangle {
@@ -71,13 +74,25 @@ Page {
                 color: "#e5e5e5"
                 font.bold: true
                 font.pixelSize: 34
-                maximumLength: 16
+                maximumLength: 14
                 validator: RegularExpressionValidator { 
                     regularExpression: /^[0-9]*$/
                 }
 
-                onTextEdited:
-                    calcStandart.enteredValue = finalTextInput.text
+                onTextEdited: {
+                    let temp = text;
+
+                    if (finalTextInput.getText(0,1) == '0' && finalTextInput.length == 2)
+                        finalTextInput.clear();
+
+                    finalTextInput.text = temp;
+                    calcStandart.enteredValue = temp;
+                }
+
+                onEditingFinished: {
+                    if (finalTextInput.length == 0)
+                        finalTextInput.text = '0';
+                }
             }
         }
         // grid buttons view

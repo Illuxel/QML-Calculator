@@ -5,6 +5,8 @@ import QtQuick.Layouts 1.3
 import QtQuick.Window 2.3
 
 import "components" as CalculatorComponents
+
+import Calculator.History 1.0
 import Calculator.Converter 1.0
 
 ApplicationWindow {
@@ -149,8 +151,10 @@ ApplicationWindow {
                     Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
 
                     iconSource: "qrc:/app/assets/images/history.png"
-                    onClicked: 
+                    onClicked: {
+                        historyListView.model = History.list;
                         drawerHistory.open();
+                    }
                 }
             }
             background: Rectangle {
@@ -240,6 +244,8 @@ ApplicationWindow {
                         textBold: false
 
                         onClicked: {
+                            drawerMainList.close();
+
                             if (section == "Calculator")
                                 historyButton.visible = true;
                             else  
@@ -248,7 +254,6 @@ ApplicationWindow {
                             if (section == "Converter")
                                 Converter.currentConverter = name;
 
-                            drawerMainList.close();
                             stackView.pop();
                             stackView.push(page);
                             calcType.text = name
@@ -310,8 +315,10 @@ ApplicationWindow {
                     width: parent.width
                     height: 48
                     textButton: modelData
-                    onClicked: {}
-                        //History.currentItem = modelData;
+                    onClicked: {
+                        History.currentItem = modelData;
+                        drawerHistory.close()
+                    }
                 }
             }
         }
