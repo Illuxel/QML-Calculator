@@ -4,7 +4,7 @@
 
 Converter::Converter(QObject* parent)
     : QObject(parent)
-    , m_jsEngine(new QJSEngine(this))
+    , m_jsEngine(new QJSEngine())
 {
     QFile file("ConverterData.json");
     file.open(QFile::ReadOnly);
@@ -20,12 +20,6 @@ Converter::~Converter()
     delete m_ConverterScheme;
 }
 
-void Converter::LoadObjectToList()
-{
-    m_TypeList = m_ConverterScheme->value(m_CurrentConverter).toObject().keys();
-    emit datatypeListChanged();
-}
-
 void Converter::SetConverter(const QString& converter)
 {
     m_CurrentConverter = "";
@@ -34,14 +28,32 @@ void Converter::SetConverter(const QString& converter)
 		if (data == converter)
 			m_CurrentConverter = converter;
 
-    LoadObjectToList();
-
     emit converterChanged();
 }
 
-const QStringList& Converter::GetConverterList() const
+void Converter::SetFirstType(const QString& first)
 {
-    return m_TypeList;
+    m_selectedTypes.first = first;
+    emit selectedTypesChanged();
+}
+const QString& Converter::GetFirstType() const
+{
+    return m_selectedTypes.first;
+}
+
+void Converter::SetSecondType(const QString& second)
+{
+    m_selectedTypes.second = second;
+    emit selectedTypesChanged();
+}
+const QString& Converter::GetSecondType() const
+{
+    return m_selectedTypes.second;
+}
+
+QStringList Converter::GetConverterList() const
+{
+    return m_ConverterScheme->value(m_CurrentConverter).toObject().keys();
 }
 const QString &Converter::GetCurrentConverter() const
 {
