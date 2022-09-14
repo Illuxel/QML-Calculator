@@ -20,10 +20,12 @@ Page {
             finalTextInput.text = calcStandart.finalValue
 
         onLastOperationChanged: 
-            lastTextInput.text = calcStandart.lastOperation
+            lastTextInput.text = calcStandart.lastOperation;
 
-        Component.onCompleted:
-            calcStandart.setHistory(History.object)
+        Component.onCompleted: {
+            calcStandart.setHistory(History.object);
+            calcStandart.update()
+        }
     }
 
     background: Rectangle {
@@ -79,19 +81,25 @@ Page {
                     regularExpression: /^[0-9]*$/
                 }
 
+                onAccepted: 
+                    calcStandart.getEqual()
+
                 onTextEdited: {
                     let temp = text;
 
-                    if (finalTextInput.getText(0,1) == '0' && finalTextInput.length == 2)
+                    //if (finalTextInput.getText(0,1) == '0' && finalTextInput.length == 2)
+                    //    finalTextInput.clear();
+                    if (finalTextInput.getText(0,1) == '.')
                         finalTextInput.clear();
 
                     finalTextInput.text = temp;
                     calcStandart.enteredValue = temp;
                 }
-
                 onEditingFinished: {
                     if (finalTextInput.length == 0)
                         finalTextInput.text = '0';
+                    if (finalTextInput.getText(0,1) == '0')
+                        finalTextInput.remove(0,1);
                 }
             }
         }
@@ -152,6 +160,9 @@ Page {
                         ? CalculatorComponents.StyledToolButton.baseColor : color
 
                     onClicked: {
+                        if (ph == '.')
+                            ;
+
                         calcStandart.processButton(type, func, ph);
                     }
                 }

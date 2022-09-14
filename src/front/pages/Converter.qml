@@ -28,6 +28,10 @@ Page {
 		ComboBox {
 			id: firstTypeBox
             model: Converter.typeList
+
+            onActivated: {
+                Converter.firstType = firstTypeBox.textAt(currentIndex)
+            }
 		}
 
         CalculatorComponents.StyledTextInput {
@@ -42,6 +46,10 @@ Page {
 		ComboBox {
 			id: secondTypeBox
             model: Converter.typeList
+
+            onActivated: {
+                Converter.secondType = secondTypeBox.textAt(currentIndex)
+            }
 		}
 
 		Rectangle {
