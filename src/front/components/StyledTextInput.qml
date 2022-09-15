@@ -5,6 +5,7 @@ Rectangle {
     id: textInputStyle
 
     property string textInput: ""
+    signal onTextChanged();
     
     property color textColor: "#e5e5e5"
     property real textSize: 34
@@ -17,13 +18,14 @@ Rectangle {
     property color hoverColor: "transparent"
     property color borderColor: "white"
 
+
     clip: true
     radius: 5
 
     color: textInputStyle.hovered ? 
-        ((hoverColor == "")
+        ((hoverColor === "")
             ? Qt.lighter(baseColor, 1.18) : hoverColor) : backColor
-    border.color: textInputStyle.hovered ? backColor : borderColor
+    border.color: textInputStyle.hovered ? borderColor : backColor
 
     TextInput {
         id: textInput
@@ -41,6 +43,10 @@ Rectangle {
 
         validator: RegularExpressionValidator { 
             regularExpression: /^[0-9]*$/
+        }
+
+        onTextEdited: {
+        
         }
     }
 }

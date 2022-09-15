@@ -11,41 +11,56 @@ ToolButton {
     property real iconH: 24
 
     property color textColor: "#e5e5e5"
+    property color baseColor: "#2e2e2e"
+    property color hoverColor: "#2e2e2e"
+
     property string textButton: ""
+    property int textFontSize: 16
     property bool textBold: true
 
-    property bool centered: true
-    property real itemSpacing: 0
+    // margins
+    property real imageLeftMargin: 0
 
-    property real imageLeftMargin: 5
-    property real textLeftMargin: 8
+    property int imageAlign: Qt.AlignLeft
+    property bool fillImageWidth: false
+    property bool fillImageHeight: false
 
-    property color baseColor: "#2e2e2e"
+    // margins
+    property real textLeftMargin: 0
+
+    property int textAlign: Qt.AlignLeft
+    property bool fillTextWidth: false
+    property bool fillTextHeight: false
+
+    property real contentSpacing: 0
 
     property real fluentThikness: 1.0
 
     contentItem: RowLayout {
-        spacing: itemSpacing
+        spacing: contentSpacing
+        Item { Layout.fillWidth: fillImageWidth; }
         Image {
             smooth: false
-
             source: iconSource
-
             sourceSize.width: iconW
             sourceSize.height: iconH
-
             Layout.leftMargin: imageLeftMargin
-            Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
+            Layout.alignment: imageAlign
+            Layout.fillHeight: fillImageHeight
         }
+        Item { Layout.fillWidth: fillImageWidth; }
+
+        Item { Layout.fillWidth: fillTextWidth; }
         Text {
             text: textButton
             color: textColor
             font.bold: textBold
-            font.pixelSize: 16
+            font.pixelSize: textFontSize
             Layout.leftMargin: textLeftMargin
-            Layout.alignment: Qt.AlignLeft
+            Layout.alignment: textAlign
+            Layout.fillHeight: fillTextHeight
         }
-        Item { Layout.fillWidth: centered }
+        Item { Layout.fillWidth: fillTextWidth; }
      }
      background: Rectangle {
          color: styledButton.hovered ? Qt.lighter(baseColor, 1.18) : baseColor

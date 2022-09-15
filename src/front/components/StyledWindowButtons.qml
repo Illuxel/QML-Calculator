@@ -7,8 +7,6 @@ ToolButton {
 
     property string iconSource: ""
 
-    property size iconSize: [1, 1]
-
     property int iconWidth: 20
     property int iconHight: 20
 
@@ -25,7 +23,7 @@ ToolButton {
     }
 
     background: Rectangle {
-        color: styledButton.hovered ? Qt.lighter((hoverColor == "")
+        color: styledButton.hovered ? Qt.lighter((hoverColor === "")
                                                  ? baseColor
                                                  : hoverColor, 1.25) : baseColor
     }
