@@ -3,7 +3,7 @@ import QtQuick.Shapes 1.12
 import QtQuick.Controls 2.4
 import QtQuick.Layouts 1.3
 
-import "../components" as CalculatorComponents
+import "../components" as Calculator
 import Calculator.Converter 1.0
 
 Page {
@@ -16,41 +16,39 @@ Page {
 	ColumnLayout {
 		anchors.fill: parent
         spacing: 1
-		CalculatorComponents.StyledTextInput {
+		Calculator.StyledTextInput {
 			id: firstTypeInput
-
 			Layout.fillWidth: true
 			Layout.minimumHeight: 32
 			Layout.margins: 10
-
 			textSize: 30
 		}
-		ComboBox {
-			id: firstTypeBox
+		Calculator.StyledComboBox {
+            id: firstTypeBox
+            Layout.minimumWidth: 100
+            Layout.minimumHeight: 35
+            Layout.leftMargin: 10
             model: Converter.typeList
-
-            onActivated: {
+            onActivated:
                 Converter.firstType = firstTypeBox.textAt(currentIndex)
-            }
-		}
+        }
 
-        CalculatorComponents.StyledTextInput {
+        Calculator.StyledTextInput {
 			id: secondTypeInput
-
 			Layout.fillWidth: true
 			Layout.minimumHeight: 32
 			Layout.margins: 10
-
 			textSize: 30
 		}
-		ComboBox {
-			id: secondTypeBox
+		Calculator.StyledComboBox {
+            id: secondTypeBox
+            Layout.minimumWidth: 100
+            Layout.minimumHeight: 35
+            Layout.leftMargin: 10
             model: Converter.typeList
-
-            onActivated: {
+            onActivated:
                 Converter.secondType = secondTypeBox.textAt(currentIndex)
-            }
-		}
+        }
 
 		Rectangle {
             id: gridInputStyle
@@ -84,30 +82,32 @@ Page {
                     ListElement { ph: "0";   type: "value"; func: "0";   color: "#31313d" }
                     ListElement { ph: ".";   type: "value"; func: ".";   color: "#31313d" }
                 }
-                delegate: CalculatorComponents.StyledToolButton {
-                    height: 44
+                delegate: Calculator.StyledToolButton {
+                    height: 40
                     width: 96
                     iconH: 0
                     iconW: 0
                     fluentThikness: 0.89
+                    textButton: ph
+
+                    contentSpacing: 0
+                    imageLeftMargin: 0
+                    textLeftMargin: 0
+
 
                     enabled: (ph == "") ? false : true
                     visible: (ph == "") ? false : true
 
-                    centered: false
-                    itemSpacing: 0
-
-                    textButton: ph
-                    imageLeftMargin: 0
-
                     baseColor: (color === "")
-                        ? CalculatorComponents.StyledToolButton.baseColor : color
-
+                        ? Calculator.StyledToolButton.baseColor : color
+                        
                     onClicked: {
                         if (firstTypeInput.activeFocus)
                             firstTypeInput.textInput += ph;
                         if (secondTypeInput.activeFocus)
                             secondTypeInput.textInput += ph;
+
+                        Converter.calculate();
                     }
                 }
             }

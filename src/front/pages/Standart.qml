@@ -2,7 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.4
 import QtQuick.Layouts 1.3
 
-import "../components" as CalculatorComponents
+import "../components" as Calculator
 
 import Calculator.History 1.0
 import Calculator.Standart 1.0
@@ -87,8 +87,6 @@ Page {
                 onTextEdited: {
                     let temp = text;
 
-                    //if (finalTextInput.getText(0,1) == '0' && finalTextInput.length == 2)
-                    //    finalTextInput.clear();
                     if (finalTextInput.getText(0,1) == '.')
                         finalTextInput.clear();
 
@@ -143,21 +141,16 @@ Page {
                     ListElement { ph: ".";   type: "value";    func: ".";               color: "#31313d" }
                     ListElement { ph: "=";   type: "cmd";      func: "equal";           color: "#afadcc" }
                 }
-                delegate: CalculatorComponents.StyledToolButton {
+                delegate: Calculator.StyledToolButton {
                     height: 46
                     width: 72
-                    iconH: 1
-                    iconW: 1
+                    iconH: 0
+                    iconW: 0
                     fluentThikness: 0.89
-
-                    centered: false
-                    itemSpacing: 8
-
                     textButton: ph
-                    imageLeftMargin: 4
-
-                    baseColor: (color == "")
-                        ? CalculatorComponents.StyledToolButton.baseColor : color
+                    textAlign: Qt.AlignHCenter
+                    baseColor: (color === "")
+                        ? Calculator.StyledToolButton.baseColor : color 
 
                     onClicked: {
                         if (ph == '.')

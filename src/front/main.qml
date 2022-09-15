@@ -4,7 +4,7 @@ import QtQuick.Controls 2.4
 import QtQuick.Layouts 1.3
 import QtQuick.Window 2.3
 
-import "components" as CalculatorComponents
+import "components" as Calculator
 
 import Calculator.History 1.0
 import Calculator.Converter 1.0
@@ -32,7 +32,7 @@ ApplicationWindow {
     color: "transparent"
 
     background: Rectangle {
-        id: bgColor
+        //id: bgColor
         color: "#1f1f27"
         radius: 12.5
         border.color: "grey"
@@ -67,7 +67,8 @@ ApplicationWindow {
                 anchors.fill: parent
                 spacing: 0
                 Image {
-                    source: "qrc:/app/assets/images/calculator_app.png"
+                    id: appIco
+                    source: "qrc:/app/assets/images/calculator.png"
                     sourceSize.width: 20
                     sourceSize.height: 20
                     Layout.leftMargin: 5
@@ -82,13 +83,13 @@ ApplicationWindow {
 
                 Item { Layout.fillWidth: true }
 
-                CalculatorComponents.StyledWindowButtons {
+                Calculator.StyledWindowButtons {
                     iconSource: "qrc:/app/assets/images/subtract.ico"
-                    hoverColor: bgColor.color
+                    hoverColor: hovered ? Qt.lighter("#1f1f27", 1.1) : "#1f1f27"
                     Layout.minimumWidth: 42
                     onClicked: window.showMinimized();
                 }
-                CalculatorComponents.StyledWindowButtons {
+                Calculator.StyledWindowButtons {
                     iconSource: "qrc:/app/assets/images/close.ico"
                     hoverColor: hovered ? "red" : "#1f1f27"
                     Layout.minimumWidth: 42
@@ -113,7 +114,7 @@ ApplicationWindow {
                 anchors.fill: parent
                 spacing: 0
                 // drawer button
-                CalculatorComponents.StyledDrawerButton {
+                Calculator.StyledDrawerButton {
                     id: drawerButton
 
                     Layout.leftMargin: 6
@@ -144,7 +145,7 @@ ApplicationWindow {
                 Item { Layout.fillWidth: true }
 
                 // History
-                CalculatorComponents.StyledDrawerButton {
+                Calculator.StyledDrawerButton {
                     id: historyButton
 
                     Layout.rightMargin: 6
@@ -228,23 +229,27 @@ ApplicationWindow {
                     spacing: 4
 
                     model: ListModel {
-                        ListElement { name: "Standart"; icosource: "qrc:/app/assets/images/standart.ico"; page: "qrc:/app/qml/pages/Standart.qml";  section: "Calculator" }
-                        ListElement { name: "Angle";    icosource: "qrc:/app/assets/images/angle.ico";    page: "qrc:/app/qml/pages/Converter.qml"; section: "Converter" }
-                        ListElement { name: "Data";     icosource: "qrc:/app/assets/images/data.ico";     page: "qrc:/app/qml/pages/Converter.qml"; section: "Converter" }
+                        ListElement { name: "Standart"; icosource: "qrc:/app/assets/images/calculator.png"; page: "qrc:/app/qml/pages/Standart.qml";  section: "Calculator" }
+                        ListElement { name: "Angle";    icosource: "qrc:/app/assets/images/angle.png";    page: "qrc:/app/qml/pages/Converter.qml"; section: "Converter" }
+                        ListElement { name: "Data";     icosource: "qrc:/app/assets/images/data.png";     page: "qrc:/app/qml/pages/Converter.qml"; section: "Converter" }
                     }
-                    delegate: CalculatorComponents.StyledToolButton {
+                    delegate: Calculator.StyledToolButton {
                         iconSource: icosource
                         iconH: 28
                         iconW: 28
-
                         width: drawerList.width
                         height: 48
-
                         textButton: name
                         textBold: false
 
+                        textLeftMargin: 5
+                        imageLeftMargin: 5
+
+                        textAlign: Qt.AlignLeft
+
                         onClicked: {
                             drawerMainList.close();
+                            appIco.source = icosource;
 
                             if (section == "Calculator")
                                 historyButton.visible = true;
@@ -265,7 +270,7 @@ ApplicationWindow {
                     section.delegate: sectionHeading
                 }
 
-                CalculatorComponents.StyledToolButton {
+                Calculator.StyledToolButton {
                     id: settingsButton
 
                     iconSource: "qrc:/app/assets/images/settings.png"
@@ -273,13 +278,18 @@ ApplicationWindow {
                     textButton: "Settings"
                     textBold: false
 
+                    contentSpacing: 5
+                    imageLeftMargin: 5
+                    textAlign: Qt.AlignLeft
+
                     Layout.fillWidth: true
                     Layout.margins: 10
                     Layout.minimumHeight: 40
                     Layout.maximumHeight: 40
 
                     onClicked: {
-                        drawerMainList.close()
+                        drawerMainList.close();
+                        settingsDialog.open()
                     }
                 }
             }
@@ -289,12 +299,9 @@ ApplicationWindow {
             width: window.width
             height: 310 - bw
             y: parent.y + bw
-
             modal: true
             interactive: true
-
             edge: Qt.BottomEdge
-
             background: Rectangle {
                 radius: 12.5
                 color: "#2e2e2e"
@@ -307,14 +314,16 @@ ApplicationWindow {
                 anchors.centerIn: parent
                 width: 250
                 height: parent.height - windowToolBar.height
-
                 clip: true
                 spacing: 5
-
-                delegate: CalculatorComponents.StyledToolButton {
+                delegate: Calculator.StyledToolButton {
                     width: parent.width
                     height: 48
                     textButton: modelData
+
+                    textLeftMargin: 5
+                    textAlign: Qt.AlignLeft
+
                     onClicked: {
                         History.currentItem = modelData;
                         drawerHistory.close()
@@ -323,4 +332,9 @@ ApplicationWindow {
             }
         }
     }
+
+     Calculator.StyledDialog {
+        id: settingsDialog
+        title: "test"
+     }
 }
