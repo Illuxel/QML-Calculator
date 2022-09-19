@@ -1,15 +1,33 @@
-﻿import QtQuick 2.15
-import QtQuick.Controls 2.4
+﻿import QtQuick
+import QtQuick.Shapes
+import QtQuick.Controls
+import QtQuick.Layouts
+
 
 Rectangle {
     id: textInputStyle
 
-    property string textInput: ""
-    signal onTextChanged();
-    
+    signal textEdited()
+    signal accepted()
+    signal editingFinished()
+
+    function length() {
+        return textInput.length;
+    }
+    function remove(start, end) {
+        textInput.remove(start, end)
+    }
+    function clear() {
+        textInput.clear()
+    }
+
+    property bool allowInput: false
+
+    property string inputText: ""
     property color textColor: "#e5e5e5"
-    property real textSize: 34
     property bool textBold: true
+    property real textSize: 34
+
     property int maxLength: 16
 
     property bool inputFocused: false
@@ -18,10 +36,9 @@ Rectangle {
     property color hoverColor: "transparent"
     property color borderColor: "white"
 
-
     clip: true
-    radius: 5
 
+    radius: 5
     color: textInputStyle.hovered ? 
         ((hoverColor === "")
             ? Qt.lighter(baseColor, 1.18) : hoverColor) : backColor
@@ -33,20 +50,32 @@ Rectangle {
         anchors.margins: 1
         clip: true
 
-        text: textInput
+        readOnly: allowInput
+
+        text: inputText
+        maximumLength: maxLength
 
         focus: inputFocused
+
         color: textColor
         font.bold: textBold
         font.pixelSize: textSize
-        maximumLength: maxLength
 
         validator: RegularExpressionValidator { 
             regularExpression: /^[0-9]*$/
         }
 
+        onAccepted:  {
+            textInputStyle.inputText = textInput.text;
+            textInputStyle.accepted()
+        }
         onTextEdited: {
-        
+            textInputStyle.inputText = textInput.text;
+            textInputStyle.textEdited()
+        }
+        onEditingFinished:{
+            textInputStyle.inputText = textInput.text;
+            textInputStyle.editingFinished()
         }
     }
 }
