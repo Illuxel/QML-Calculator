@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Utils.h"
+
 #include "OperationHistory.h"
 
 #include <QMetaEnum>
@@ -36,8 +38,7 @@ public:
 		Value/*,
 		Undefined*/
 	};
-	Q_FLAG(WaitOperation)
-	Q_DECLARE_FLAGS(WaitOperations, WaitOperation)
+	Q_ENUM(WaitOperation)
 
 public:
     Standart(QObject *parent = nullptr);
@@ -113,14 +114,3 @@ private:
 	QString FinalValue, UnsavedValue, LastJoined, BackEndExpression;
 	Standart::WaitOperation LastOperation;
 };
-
-template <typename Enum>
-Enum ConvertStringToEnum(const QString& enStr)
-{
-	QMetaEnum en = QMetaEnum::fromType<Enum>();
-	if (enStr.isEmpty())
-		return static_cast<Enum>(-1);
-    return static_cast<Enum>(en.keyToValue(enStr.toUtf8()));
-}
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(Standart::WaitOperations)
