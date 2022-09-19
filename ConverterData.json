@@ -1,17 +1,15 @@
 {
   "Angle": {
-    "Gardian": "%1*1.111111",
     "Radian": "%1*Math.PI/180",
-    "Degree": "%1"
+    "Gradian": "%1*200/180"
   },
   "Data": {
-    "Bytes": "8*%1",
-    "Kilobytes": "Math.pow(1000, %1)",
-    "Megabytes": "Math.pow(1000, %1)",
-    "Gigabytes": "Math.pow(1000, %1)",
-    "Terabytes": "Math.pow(1000, %1)",
-    "Petabytes": "Math.pow(1000, %1)",
-    "Exabytes": "Math.pow(1000, %1)",
-    "Zetabytes": "Math.pow(1000, %1)"
+    "Kilobytes": "%1 / Math.pow(1000, 1)",
+    "Megabytes": "%1 / Math.pow(1000, 2)",
+    "Gigabytes": "%1 / Math.pow(1000, 3)",
+    "Terabytes": "%1 / Math.pow(1000, 4)",
+    "Petabytes": "%1 / Math.pow(1000, 5)",
+    "Exabytes": "%1 / Math.pow(1000, 6)",
+    "Zetabytes": "%1 / Math.pow(1000, 7)"
   }
 }
