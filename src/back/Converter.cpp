@@ -1,61 +1,69 @@
 #include "Converter.h"
 
-#include <QFile>
-
 Converter::Converter(QObject* parent)
     : QObject(parent)
-    , m_jsEngine(new QJSEngine())
-{
-    QFile file("ConverterData.json");
-    file.open(QFile::ReadOnly);
-
-    QByteArray arr = file.readAll();
-
-    QJsonDocument doc = QJsonDocument::fromJson(arr);
-    m_ConverterScheme = new QJsonObject(doc.object());
-}
+    , m_jsEngine(new QJSEngine()) {}
 Converter::~Converter()
 {
     delete m_jsEngine;
-    delete m_ConverterScheme;
 }
 
-void Converter::SetConverter(const QString& converter)
+Q_INVOKABLE void Converter::processInput(const QString& value)
 {
-    m_CurrentConverter = "";
+    if (value.isEmpty())
+        return;
 
-	for (const auto& data : m_ConverterScheme->keys())
-		if (data == converter)
-			m_CurrentConverter = converter;
+	QString func = m_DataList[m_SelectedType].arg(value);
+    QString finalValue = ExecuteFunction(func);
 
-    emit converterChanged();
+    SetConverted(finalValue);
 }
 
-void Converter::SetFirstType(const QString& first)
+const QString& Converter::GetInputValue() const
 {
-    m_selectedTypes.first = first;
-    emit selectedTypesChanged();
+    return m_InputValue;
 }
-const QString& Converter::GetFirstType() const
+void Converter::SetInputValue(const QString& val)
 {
-    return m_selectedTypes.first;
+    m_InputValue = val;
+    emit inputValueChanged();
+}
+
+QString Converter::GetConverted() const
+{
+    return m_LastInputed;
+}
+void Converter::SetConverted(const QString& val)
+{
+    m_LastInputed = val;
+	emit lastConvertedChanged();
+}
+
+QString Converter::ExecuteFunction(const QString& func)
+{
+    QJSValue val = m_jsEngine->evaluate(func);
+    return val.toString();
 }
 
 void Converter::SetSecondType(const QString& second)
 {
-    m_selectedTypes.second = second;
-    emit selectedTypesChanged();
+    m_SelectedType = second;
+
+    processInput(m_LastInputed);
 }
 const QString& Converter::GetSecondType() const
 {
-    return m_selectedTypes.second;
+    return m_SelectedType;
 }
 
 QStringList Converter::GetConverterList() const
 {
-    return m_ConverterScheme->value(m_CurrentConverter).toObject().keys();
+	return m_DataList.keys();
 }
-const QString &Converter::GetCurrentConverter() const
+Q_INVOKABLE void Converter::setScheme(const QVariantMap& scheme)
 {
-    return m_CurrentConverter;
+    for (const auto& [name, function] : scheme.toStdMap())
+        m_DataList.insert(name, function.toString());
+
+    emit schemeLoaded();
 }

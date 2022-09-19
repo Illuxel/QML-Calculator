@@ -3,46 +3,64 @@
 #include <QStringListModel>
 #include <QHash>
 
-#include <QJsonDocument>
-#include <QJsonObject>
-
-#include <QJSEngine>
+#include "Utils.h"
+#include "ConverterHandler.h"
 
 class Converter
     : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QStringList typeList READ GetConverterList)
-    Q_PROPERTY(QString currentConverter MEMBER m_CurrentConverter READ GetCurrentConverter WRITE SetConverter NOTIFY converterChanged)
-    QString m_CurrentConverter;
 
-    Q_PROPERTY(QString firstType READ GetFirstType WRITE SetFirstType NOTIFY selectedTypesChanged)
-    Q_PROPERTY(QString secondType READ GetSecondType WRITE SetSecondType NOTIFY selectedTypesChanged)
+		Q_PROPERTY(QStringList typeList READ GetConverterList NOTIFY schemeLoaded)
+		Q_PROPERTY(QString secondType READ GetSecondType WRITE SetSecondType)
+		Q_PROPERTY(QString inputValue READ GetInputValue WRITE SetInputValue NOTIFY inputValueChanged)
+        
+    Q_PROPERTY(QString convertedValue READ GetConverted NOTIFY lastConvertedChanged)
 
 public:
+    enum ButtonType 
+    {
+        Value = 2,
+        Function
+    };
+    Q_ENUM(ButtonType)
+
     Converter(QObject* parent = nullptr);
 
-    void SetConverter(const QString& type);
+    Q_INVOKABLE void processInput(const QString& value);
 
-    void SetFirstType(const QString& first);
-    const QString& GetFirstType() const;
+    const QString& GetInputValue() const;
+    void SetInputValue(const QString& val);
+
+    QString GetConverted() const;
+    void SetConverted(const QString& val);
 
     void SetSecondType(const QString& second);
     const QString& GetSecondType() const;
 
-    QStringList    GetConverterList() const;
-    const QString& GetCurrentConverter() const;
+	QStringList GetConverterList() const;
+	Q_INVOKABLE void setScheme(const QVariantMap& scheme);
 
     ~Converter() override;
 
+private:
+    QString ExecuteFunction(const QString& func);
+
 signals:
-    void converterChanged();
-    void selectedTypesChanged();
+    void schemeLoaded();
+
+    void inputValueChanged();
+    void lastConvertedChanged();
 
 private:
-    QJSEngine* m_jsEngine = nullptr;
-    QJsonObject* m_ConverterScheme = nullptr;
+	QJSEngine* m_jsEngine = nullptr;
+    // first - data name 
+    // second - data function
+    QMap <QString, QString> m_DataList;
 
-    QPair <QString, QString> m_selectedTypes;
+    QString m_InputValue;
+
+    QString m_SelectedType;
+    QString m_LastInputed;
 };
 

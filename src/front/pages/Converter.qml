@@ -1,10 +1,12 @@
-﻿import QtQuick 2.15
-import QtQuick.Shapes 1.12
-import QtQuick.Controls 2.4
-import QtQuick.Layouts 1.3
+﻿import QtQuick
+import QtQml.Models
+import QtQuick.Layouts
+import QtQuick.Controls
 
 import "../components" as Calculator
+
 import Calculator.Converter 1.0
+import Calculator.ConverterHandler 1.0
 
 Page {
 	id: page
@@ -13,43 +15,65 @@ Page {
         color: "transparent"
     }
 
+    Converter {
+        id: converter
+
+        onInputValueChanged:
+            firstTypeInput.inputText = converter.inputValue
+
+        onLastConvertedChanged: 
+            secondTypeInput.inputText = converter.convertedValue
+
+        onSchemeLoaded: {
+            secondTypeBox.model = converter.typeList
+        }
+        Component.onCompleted: {
+            converter.setScheme(ConverterHandler.getScheme());
+            converter.secondType = secondTypeBox.textAt(0)
+        }
+    }
 	ColumnLayout {
 		anchors.fill: parent
         spacing: 1
+        //
 		Calculator.StyledTextInput {
 			id: firstTypeInput
 			Layout.fillWidth: true
 			Layout.minimumHeight: 32
 			Layout.margins: 10
 			textSize: 30
-		}
-		Calculator.StyledComboBox {
-            id: firstTypeBox
-            Layout.minimumWidth: 100
-            Layout.minimumHeight: 35
-            Layout.leftMargin: 10
-            model: Converter.typeList
-            onActivated:
-                Converter.firstType = firstTypeBox.textAt(currentIndex)
-        }
 
+            onTextEdited:
+                converter.processInput(firstTypeInput.inputText)
+		}
+        //
+        Rectangle {
+            color: "white"
+            Layout.fillWidth: true
+            Layout.minimumHeight: 2
+            Layout.margins: 5
+            Layout.leftMargin: 10
+            Layout.rightMargin: 10
+        }
+        //
         Calculator.StyledTextInput {
 			id: secondTypeInput
 			Layout.fillWidth: true
 			Layout.minimumHeight: 32
 			Layout.margins: 10
-			textSize: 30
+			textSize: 32
+            allowInput: true
 		}
 		Calculator.StyledComboBox {
             id: secondTypeBox
             Layout.minimumWidth: 100
             Layout.minimumHeight: 35
             Layout.leftMargin: 10
-            model: Converter.typeList
-            onActivated:
-                Converter.secondType = secondTypeBox.textAt(currentIndex)
-        }
 
+            onActivated:
+                converter.secondType = secondTypeBox.textAt(currentIndex)
+        }
+        //
 		Rectangle {
             id: gridInputStyle
             Layout.fillWidth: true
@@ -90,10 +114,7 @@ Page {
                     fluentThikness: 0.89
                     textButton: ph
 
-                    contentSpacing: 0
-                    imageLeftMargin: 0
-                    textLeftMargin: 0
-
+                    textItemAlign: Qt.AlignHCenter
 
                     enabled: (ph == "") ? false : true
                     visible: (ph == "") ? false : true
@@ -102,12 +123,20 @@ Page {
                         ? Calculator.StyledToolButton.baseColor : color
                         
                     onClicked: {
-                        if (firstTypeInput.activeFocus)
-                            firstTypeInput.textInput += ph;
-                        if (secondTypeInput.activeFocus)
-                            secondTypeInput.textInput += ph;
+                        if (type === "cmd") {
+                            if (func === "del") {
+                                firstTypeInput.remove(firstTypeInput.length() - 1, firstTypeInput.length());
 
-                        Converter.calculate();
+                                if (firstTypeInput.length() == 0)
+                                    firstTypeInput.inputText = "0";
+                            }
+                            else if (func === "clr")
+                                firstTypeInput.clear();
+                        }
+                        else {
+                            firstTypeInput.inputText += ph;
+                            converter.processInput(firstTypeInput.inputText)
+                        }
                     }
                 }
             }
