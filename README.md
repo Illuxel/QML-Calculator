@@ -6,4 +6,4 @@ It's simple calculator witten on QML and C++.
   There are 3 types of calculator:
   - Standart calculator
   - Data unit converter
-  - Angle convertor
+  - Angle converter
