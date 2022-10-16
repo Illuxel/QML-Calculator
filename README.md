@@ -1,5 +1,5 @@
 # QML-Calculator
-It's simple calculator witten on QML and C++.
+It's simple calculator written on QML and C++.
 
 # Types
 
