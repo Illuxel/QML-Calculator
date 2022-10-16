@@ -25,11 +25,11 @@ void Standart::processButton(const QString& type, const QString& func, const QSt
     case Standart::Cmd: ExecuteCommand(func);
         break;
     case Standart::Function: AddFunction(func, placeHolder);
-		break;
-	case Standart::Operator: AddOperator(*func.begin());
+	break;
+    case Standart::Operator: AddOperator(*func.begin());
         break;
-	case Standart::Value: AddEnteredValue(*func.begin());
-		break;
+    case Standart::Value: AddEnteredValue(*func.begin());
+	break;
     }
 }
 void Standart::setHistory(History* history)
